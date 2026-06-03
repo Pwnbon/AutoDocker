@@ -19,7 +19,7 @@ AutoDocker accepts a GitHub repository URL, clones it, generates a `Dockerfile`,
 ## Installation
 
 ```bash
-pip install autodocker
+pipx install git+https://github.com/Pwnbon/AutoDocker
 ```
 
 Or install from source:
@@ -28,6 +28,17 @@ Or install from source:
 git clone https://github.com/yourname/autodocker
 cd autodocker
 pip install -e .
+```
+
+Add yourself to the Docker group so you wont have to type suod
+
+```bash
+sudo usermod -aG docker $USER 
+```
+
+You will have login again to the current user so the new group permissions takes effect or in the same terminal just type
+```bash
+newgrp docker  
 ```
 
 ---
