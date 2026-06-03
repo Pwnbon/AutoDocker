@@ -1,0 +1,226 @@
+# AutoDocker
+
+> Build and run Python GitHub repositories inside Docker — zero config required.
+
+AutoDocker accepts a GitHub repository URL, clones it, generates a `Dockerfile`, builds a Docker image using `python:3.12-slim`, and prints ready-to-use `docker run` commands. You decide which script to execute.
+
+---
+
+## Requirements
+
+| Dependency | Notes |
+|---|---|
+| Python 3.12+ | Standard library only — no pip packages needed |
+| Docker | Must be installed and the daemon must be running |
+| Git | Used internally to clone repositories |
+
+---
+
+## Installation
+
+```bash
+pip install autodocker
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/yourname/autodocker
+cd autodocker
+pip install -e .
+```
+
+---
+
+## Quick Start
+
+```bash
+# Build an image from a GitHub repository
+autodocker build https://github.com/example/mytool
+
+# Build with a custom image name
+autodocker build https://github.com/example/mytool --name mytool
+
+# Shorthand (no explicit 'build' subcommand needed)
+autodocker https://github.com/example/mytool -n mytool
+```
+
+---
+
+## Commands
+
+### `build` — Clone and build
+
+```bash
+autodocker build <github-url> [--name <image-name>]
+```
+
+1. Clones the repository into a temporary directory.
+2. Generates a `Dockerfile` (with or without `requirements.txt` support).
+3. Builds the Docker image.
+4. Cleans up the temporary clone.
+5. Prints usage examples.
+
+**Example output:**
+
+```
+✓ Repository cloned
+✓ Dockerfile generated
+✓ Docker image built
+✓ Temporary files removed
+
+Build successful
+
+Image Name: mytool
+
+Run examples:
+
+  docker run --rm mytool script.py --help
+  docker run --rm mytool script.py -arg1 value1
+```
+
+---
+
+### `run` — Run a script inside an image
+
+```bash
+autodocker run <image-name> <script.py> [args...]
+```
+
+Internally executes:
+
+```bash
+docker run --rm <image-name> <script.py> [args...]
+```
+
+**Examples:**
+
+```bash
+autodocker run mytool main.py
+autodocker run mytool scraper.py --url https://example.com --verbose
+```
+
+---
+
+### `list` — List managed images
+
+```bash
+autodocker list
+```
+
+Displays all images tracked by AutoDocker with their build dates and source URLs.
+
+---
+
+### `info` — Inspect an image
+
+```bash
+autodocker info <image-name>
+```
+
+Shows:
+- Image name
+- Source repository URL
+- Build date
+
+---
+
+### `remove` — Delete an image
+
+```bash
+autodocker remove <image-name>
+```
+
+Removes the Docker image and clears its metadata entry.
+
+---
+
+## Automatic Naming
+
+If you do not supply `--name`, AutoDocker generates a name like:
+
+```
+<repo-name>-<6-char-hash>
+```
+
+The hash is derived from the repository URL, so it is stable across rebuilds.
+
+**Example:** `nuclei-a17f3c`
+
+---
+
+## Generated Dockerfiles
+
+**With `requirements.txt`:**
+
+```dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+ENTRYPOINT ["python"]
+```
+
+**Without `requirements.txt`:**
+
+```dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY . .
+
+ENTRYPOINT ["python"]
+```
+
+---
+
+## Metadata
+
+AutoDocker stores image metadata at:
+
+```
+~/.autodocker/images.json
+```
+
+Format:
+
+```json
+{
+  "mytool": {
+    "url": "https://github.com/example/mytool",
+    "build_date": "2026-06-02"
+  }
+}
+```
+
+---
+
+## Project Structure
+
+```
+autodocker/
+├── src/
+│   └── autodocker/
+│       ├── __init__.py       # Package version
+│       ├── cli.py            # Argument parsing and dispatch
+│       ├── commands.py       # Command implementations
+│       ├── docker_utils.py   # Docker build / remove helpers
+│       ├── git_utils.py      # Git clone helpers
+│       ├── metadata.py       # ~/.autodocker/images.json I/O
+│       └── naming.py         # Image name generation
+├── pyproject.toml
+└── README.md
+```
+
+---
+
+## License
+
+MIT
