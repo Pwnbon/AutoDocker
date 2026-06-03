@@ -30,7 +30,7 @@ cd autodocker
 pip install -e .
 ```
 
-Add yourself to the Docker group so you wont have to type suod
+Add yourself to the Docker group so you wont have to type sudo
 
 ```bash
 sudo usermod -aG docker $USER 
