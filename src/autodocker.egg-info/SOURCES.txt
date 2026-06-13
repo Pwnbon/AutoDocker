@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+src/autodocker.egg-info/PKG-INFO
+src/autodocker.egg-info/SOURCES.txt
+src/autodocker.egg-info/dependency_links.txt
+src/autodocker.egg-info/entry_points.txt
+src/autodocker.egg-info/top_level.txt

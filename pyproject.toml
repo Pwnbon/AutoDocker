@@ -32,4 +32,4 @@ autodocker = "autodocker.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-dir]
-"" = "src"
+"autodocker" = "src"

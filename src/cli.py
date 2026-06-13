@@ -4,7 +4,8 @@ import argparse
 import logging
 import sys
 
-from autodocker.commands import cmd_build, cmd_info, cmd_list, cmd_remove, cmd_run
+from .commands import cmd_build, cmd_info, cmd_list, cmd_remove, cmd_run
+from .setup import ensure_autodocker_dir
 
 
 def _configure_logging() -> None:
@@ -24,7 +25,7 @@ def _build_parser() -> argparse.ArgumentParser:
     """
     parser = argparse.ArgumentParser(
         prog="autodocker",
-        description="Build and run Python GitHub repos inside Docker containers.",
+        description="Build and run GitHub repos inside Docker containers.",
     )
 
     subparsers = parser.add_subparsers(dest="command")
@@ -63,29 +64,27 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _is_url(value: str) -> bool:
+    """Return True if the string looks like a repository URL."""
+    return value.startswith(("https://", "http://", "git@", "git://"))
+
+
 def main() -> None:
     """Parse CLI arguments and dispatch to the appropriate command."""
     _configure_logging()
+    ensure_autodocker_dir()
+
+    # Shorthand: inject 'build' before argparse sees argv so it never
+    # tries to match the URL as a subcommand name.
+    if len(sys.argv) >= 2 and _is_url(sys.argv[1]):
+        sys.argv.insert(1, "build")
 
     parser = _build_parser()
-
-    # Support shorthand: autodocker <url> [-n name]  (no explicit 'build' subcommand)
-    args, unknown = parser.parse_known_args()
+    args = parser.parse_args()
 
     if args.command is None:
-        # Check if the first positional argument looks like a URL
-        remaining = sys.argv[1:]
-        if remaining and (
-            remaining[0].startswith("https://")
-            or remaining[0].startswith("http://")
-            or remaining[0].startswith("git@")
-        ):
-            # Re-parse with 'build' injected
-            sys.argv.insert(1, "build")
-            args = parser.parse_args()
-        else:
-            parser.print_help()
-            sys.exit(0)
+        parser.print_help()
+        sys.exit(0)
 
     if args.command == "build":
         cmd_build(args.url, custom_name=args.name)

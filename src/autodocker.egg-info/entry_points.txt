@@ -1,0 +1,2 @@
+[console_scripts]
+autodocker = autodocker.cli:main
